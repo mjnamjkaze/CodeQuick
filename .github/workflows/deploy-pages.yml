@@ -1,0 +1,57 @@
+# Bản gốc của .github/workflows/deploy-pages.yml ở repo public mjnamjkaze/CodeQuick.
+# Repo source (CodeQuick-src) đẩy web/ sang → workflow này deploy Pages, rồi tạo release v<web/version.txt>
+# nếu chưa có: tiêu đề = dòng đầu commit source, nội dung = phần còn lại (xem publish.yml ở repo source).
+name: Deploy web to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ['web/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  release:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tạo release nếu version mới
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VER=$(tr -d '[:space:]' < web/version.txt)
+          [ -n "$VER" ] || { echo "::error::web/version.txt trống"; exit 1; }
+          if gh release view "v$VER" >/dev/null 2>&1; then
+            echo "Release v$VER đã có."
+            exit 0
+          fi
+          # Thân commit = nguyên commit source: dòng 1 tiêu đề, từ dòng 3 là nội dung.
+          git log -1 --format=%b > body.txt
+          TITLE=$(sed -n 1p body.txt)
+          [ -n "$TITLE" ] || TITLE="v$VER"
+          tail -n +3 body.txt > notes.md
+          [ -s notes.md ] || echo "$TITLE" > notes.md
+          gh release create "v$VER" --target "$GITHUB_SHA" --title "$TITLE" --notes-file notes.md
