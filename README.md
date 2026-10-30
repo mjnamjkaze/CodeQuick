@@ -1,6 +1,6 @@
-# CodeQuick: learn developer fundamentals in 3 minutes a day
+# Everything in 5 Minutes: learn developer fundamentals in 3 minutes a day
 
-**CodeQuick** is a small, free learning game for developers who already know how to code.
+**Everything in 5 Minutes** is a small, free learning game for developers who already know how to code.
 It teaches the things you still need to understand when AI writes the code: code basics, data structures, algorithms, how code runs, OOP, clean code, testing, Git, databases, web, networking, frontend, async, debugging, architecture, distributed systems, DevOps, security and AI-assisted development.
 It also explains the business domains IT serves (ERP, sales, inventory, manufacturing, logistics, accounting, payments, HR, healthcare, education, booking) in English + Vietnamese.
 
